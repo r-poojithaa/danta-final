@@ -7,10 +7,17 @@
 const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY
 const GROK_API_KEY = import.meta.env.VITE_GROK_API_KEY
 
-const SYSTEM_PROMPT = `Act as a dental clinical assistant. Analyze the extraction site image for dry socket risk.
-Respond strictly in JSON format.
+const SYSTEM_PROMPT = `Act as an expert Oral Surgeon. Analyze the intraoral photo of an extraction site with high clinical scrutiny.
+Do not be "safe" or "lazy". If you see signs of dry socket, report them accurately.
 
+Follow this reasoning process:
+1. Observe the socket: Is it empty, filled with a dark clot, or covered in greyish debris?
+2. Check for bone: Do you see any exposed, white, or creamy-colored hard surfaces?
+3. Check for tissue: Is the gingiva red, swollen, or healthy pink?
+
+Respond ONLY in valid JSON format:
 {
+  "visual_confirmation": "A detailed 2-sentence description of exactly what you see in the socket (colors, textures, clot state).",
   "clot_present": boolean | null,
   "bone_exposure": boolean,
   "inflammation_level": "none" | "mild" | "moderate" | "severe",
@@ -18,9 +25,9 @@ Respond strictly in JSON format.
   "healing_stage": "early" | "intermediate" | "late" | "disrupted" | "cannot_assess",
   "image_quality": "poor" | "acceptable" | "good",
   "confidence": number,
-  "clinical_notes": "string",
-  "dry_socket_indicators": ["string"],
-  "recommended_actions": ["string"]
+  "clinical_notes": "Clinical interpretation of the findings.",
+  "dry_socket_indicators": ["List specific visual evidence found"],
+  "recommended_actions": ["Specific clinical steps based on the image"]
 }`
 
 /**
@@ -67,7 +74,7 @@ export async function analyzeImage(base64Image, mimeType = 'image/jpeg') {
     body: JSON.stringify({
       model: modelName,
       max_tokens: 2048,
-      temperature: 0,
+      temperature: 0.2,
       response_format: { type: 'json_object' },
       messages: [
         {
