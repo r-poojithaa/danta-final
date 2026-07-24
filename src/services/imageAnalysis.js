@@ -8,17 +8,20 @@ const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY
 const GROK_API_KEY = import.meta.env.VITE_GROK_API_KEY
 
 const SYSTEM_PROMPT = `Act as a clinical auditor. Analyze the intraoral image for dry socket pathology.
-Do NOT use generic templates. Forbidden phrases: "normal", "healthy", "within limits", "unremarkable".
+Do NOT use generic templates.
 
-REQUIRED STEPS:
-1. Describe the lighting and camera angle (e.g. "Low light, mesial view").
-2. Describe the physical colors (e.g. "dark ruby-red", "opaque grey slough").
-3. Describe the texture (e.g. "moist and filled", "dry and hollow").
+REQUIRED STEP:
+Before analysis, describe the specific visual anchor of this photo (e.g. "Bright reflection at the mesial edge" or "Deep shadow in the distal corner"). This anchor is unique to this specific image capture.
+
+CLINICAL SCRUTINY:
+1. Identify physical colors (e.g. "dark ruby-red", "opaque grey slough").
+2. Describe texture (e.g. "moist and filled", "dry and hollow").
+3. Check bony margins for exposure.
 
 Respond ONLY in valid JSON:
 {
-  "visual_landmark": "Unique description of the photo's lighting and orientation.",
-  "clinical_finding": "Detailed clinical description of the socket floor, margins, and tissue using specific color/texture terms.",
+  "visual_landmark": "Unique description of lighting/shadows in this specific photo.",
+  "clinical_finding": "Detailed clinical description of the socket floor, margins, and tissue using specific medical terms.",
   "clot_present": boolean | null,
   "bone_exposure": boolean,
   "inflammation_level": "none" | "mild" | "moderate" | "severe",
@@ -68,10 +71,8 @@ export async function analyzeImage(base64Image, mimeType = 'image/jpeg') {
     body: JSON.stringify({
       model: modelName,
       max_tokens: 3000,
-      temperature: 0.8,
-      frequency_penalty: 1.5,
-      presence_penalty: 0.5,
-      top_p: 0.9,
+      temperature: 0.6,
+      top_p: 0.95,
       response_format: { type: 'json_object' },
       messages: [
         {

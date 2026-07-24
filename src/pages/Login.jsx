@@ -207,7 +207,7 @@ export default function Login() {
         </div>
 
         <p className="text-center text-xs text-slate-500 mt-6">
-          Danta v1.1-REAL-AI · HIPAA-compliant · End-to-end encrypted
+          Danta v1.2-PRECISION · HIPAA-compliant · End-to-end encrypted
         </p>
       </div>
     </div>
