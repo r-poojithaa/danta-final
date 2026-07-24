@@ -78,6 +78,7 @@ export async function analyzeImage(base64Image, mimeType = 'image/jpeg') {
     body: JSON.stringify({
       model: modelName,
       max_tokens: 800,
+      response_format: { type: 'json_object' },
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
         {
@@ -105,6 +106,8 @@ export async function analyzeImage(base64Image, mimeType = 'image/jpeg') {
   const data = await response.json()
   const content = data.choices?.[0]?.message?.content?.trim()
 
+  console.log('[ImageAnalysis] Raw AI Content:', content)
+
   let result
   try {
     result = JSON.parse(content)
@@ -112,8 +115,14 @@ export async function analyzeImage(base64Image, mimeType = 'image/jpeg') {
     // Try to extract JSON from response
     const match = content.match(/\{[\s\S]*\}/)
     if (match) {
-      result = JSON.parse(match[0])
+      try {
+        result = JSON.parse(match[0])
+      } catch (innerErr) {
+        console.error('[ImageAnalysis] JSON extraction failed:', innerErr)
+        throw new Error('AI returned malformed JSON. Please try again.')
+      }
     } else {
+      console.error('[ImageAnalysis] No JSON found in content')
       throw new Error('AI returned an invalid response format. Please try again.')
     }
   }
