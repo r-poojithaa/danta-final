@@ -46,10 +46,10 @@ export async function analyzeImage(base64Image, mimeType = 'image/jpeg') {
 
   // Detect provider based on key prefix
   if (key.startsWith('gsk_')) {
-    // Groq API
+    // Groq API - Using the primary vision model
     apiKey = key
     apiUrl = 'https://api.groq.com/openai/v1/chat/completions'
-    modelName = 'openai/gpt-oss-20b'
+    modelName = 'qwen/qwen3.6-27b'
   } else if (key.startsWith('xai-')) {
     // xAI API
     apiKey = key
@@ -70,21 +70,20 @@ export async function analyzeImage(base64Image, mimeType = 'image/jpeg') {
     },
     body: JSON.stringify({
       model: modelName,
-      max_tokens: 1000,
+      max_tokens: 1024,
       temperature: 0,
       response_format: { type: 'json_object' },
       messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
         {
           role: 'user',
           content: [
             {
               type: 'text',
-              text: 'Analyze this intraoral image for dry socket risk and return a JSON object.',
+              text: SYSTEM_PROMPT + '\n\nPlease analyze this intraoral image for dry socket risk and output the results in valid JSON format.',
             },
             {
               type: 'image_url',
-              image_url: { url: dataUrl, detail: 'high' },
+              image_url: { url: dataUrl },
             },
           ],
         },
