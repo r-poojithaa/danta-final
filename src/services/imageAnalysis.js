@@ -119,7 +119,6 @@ export async function analyzeImage(base64Image, mimeType = 'image/jpeg') {
 
 /**
  * Convert image analysis result → Bayesian Network evidence keys
- * Maps GPT-4o output to the BN's CPT keys for image features
  */
 export function imageToBNEvidence(analysisResult) {
   if (!analysisResult) return {}
@@ -134,7 +133,6 @@ export function imageToBNEvidence(analysisResult) {
 
 /**
  * Calculate image-based risk score (0–100)
- * Independent score from image features alone
  */
 export function imageRiskScore(analysisResult) {
   if (!analysisResult) return 0
@@ -157,19 +155,4 @@ function enrichWithBNFeatures(result) {
     bn_evidence: imageToBNEvidence(result),
     image_risk_score: imageRiskScore(result),
   }
-}
-
-function heuristicFallback() {
-  return enrichWithBNFeatures({
-    clot_present: false,
-    bone_exposure: true,
-    inflammation_level: 'severe',
-    debris_present: false,
-    healing_stage: 'disrupted',
-    image_quality: 'acceptable',
-    confidence: 0.85,
-    clinical_notes: '[DEMO MODE] No OpenAI API key found. Simulating image analysis with high-risk findings to demonstrate the Bayesian fusion engine.',
-    dry_socket_indicators: ['Simulated absent clot', 'Simulated bone exposure', 'Simulated severe erythema'],
-    recommended_actions: ['Provide OpenAI API key in .env for real analysis'],
-  })
 }
