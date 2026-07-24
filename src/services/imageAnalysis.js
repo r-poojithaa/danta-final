@@ -7,18 +7,11 @@
 const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY
 const GROK_API_KEY = import.meta.env.VITE_GROK_API_KEY
 
-const SYSTEM_PROMPT = `You are a specialist dental radiologist and oral surgeon AI assistant.
-You will analyze intraoral photographs of extraction sites and detect clinical features relevant to dry socket (alveolar osteitis) diagnosis and risk assessment.
+const SYSTEM_PROMPT = `You are a specialist dental clinical assistant AI.
+Your task is to analyze intraoral photographs of extraction sites and identify risk factors for dry socket.
 
-CRITICAL: Respond ONLY with valid JSON. No markdown, no explanation, just the JSON object.
-
-Analyze the image for:
-1. Blood clot presence/absence in the socket
-2. Alveolar bone exposure
-3. Inflammation markers (erythema, oedema)
-4. Food debris or contamination
-5. Overall wound healing stage
-6. Any other relevant clinical findings
+You must respond ONLY with valid JSON.
+The clinical features you detect will be used in a Bayesian Network for risk calculation.
 
 JSON schema:
 {
@@ -28,14 +21,14 @@ JSON schema:
   "debris_present": boolean,
   "healing_stage": "early" | "intermediate" | "late" | "disrupted" | "cannot_assess",
   "image_quality": "poor" | "acceptable" | "good",
-  "confidence": number (0.0–1.0),
+  "confidence": number,
   "clinical_notes": string,
   "dry_socket_indicators": string[],
   "recommended_actions": string[]
 }`
 
 /**
- * Analyze an intraoral image using GPT-4o Vision
+ * Analyze an intraoral image using GPT-OSS Vision
  * @param {string} base64Image  – base64-encoded image (without data URI prefix)
  * @param {string} mimeType     – e.g. 'image/jpeg'
  * @returns {Promise<ImageAnalysisResult>}
@@ -53,12 +46,12 @@ export async function analyzeImage(base64Image, mimeType = 'image/jpeg') {
 
   // Detect provider based on key prefix
   if (key.startsWith('gsk_')) {
-    // Groq API (Commonly used by people asking for "Grok")
+    // Groq API
     apiKey = key
     apiUrl = 'https://api.groq.com/openai/v1/chat/completions'
-    modelName = 'qwen/qwen3.6-27b'
+    modelName = 'openai/gpt-oss-20b'
   } else if (key.startsWith('xai-')) {
-    // xAI API (The official Grok API)
+    // xAI API
     apiKey = key
     apiUrl = 'https://api.x.ai/v1/chat/completions'
     modelName = 'grok-4.5'
@@ -77,7 +70,8 @@ export async function analyzeImage(base64Image, mimeType = 'image/jpeg') {
     },
     body: JSON.stringify({
       model: modelName,
-      max_tokens: 800,
+      max_tokens: 1000,
+      temperature: 0,
       response_format: { type: 'json_object' },
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
@@ -86,7 +80,7 @@ export async function analyzeImage(base64Image, mimeType = 'image/jpeg') {
           content: [
             {
               type: 'text',
-              text: 'Please analyze this intraoral extraction site photograph for dry socket risk indicators. Return structured JSON only.',
+              text: 'Analyze this intraoral image for dry socket risk and return a JSON object.',
             },
             {
               type: 'image_url',
