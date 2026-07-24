@@ -7,22 +7,18 @@
 const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY
 const GROK_API_KEY = import.meta.env.VITE_GROK_API_KEY
 
-const SYSTEM_PROMPT = `Act as an expert Oral Surgeon performing a mandatory clinical audit.
-Every photo is unique. You MUST describe specific visual evidence. Do not use generic templates.
+const SYSTEM_PROMPT = `Act as a clinical auditor. Analyze the intraoral image for dry socket pathology.
+Do NOT use generic templates. Forbidden phrases: "normal", "healthy", "within limits", "unremarkable".
 
-Analyze these 3 specific zones:
-1. SOCKET FLOOR: Describe the exact color (e.g., ruby-red, grey slough, creamy white bone). Is it hollow or filled?
-2. BONY MARGINS: Are the edges sharp, white, and exposed, or covered by soft tissue?
-3. GINGIVAL CUFF: Describe the inflammation level and any edema at the margins.
+REQUIRED STEPS:
+1. Describe the lighting and camera angle (e.g. "Low light, mesial view").
+2. Describe the physical colors (e.g. "dark ruby-red", "opaque grey slough").
+3. Describe the texture (e.g. "moist and filled", "dry and hollow").
 
 Respond ONLY in valid JSON:
 {
-  "zone_analysis": {
-    "floor": "Detailed description of the socket floor/clot.",
-    "margins": "Description of the bone and socket edges.",
-    "cuff": "Description of the surrounding gum tissue."
-  },
-  "visual_reasoning": "A clinical summary of why you chose the following flags, referencing specific pixel data (colors/textures).",
+  "visual_landmark": "Unique description of the photo's lighting and orientation.",
+  "clinical_finding": "Detailed clinical description of the socket floor, margins, and tissue using specific color/texture terms.",
   "clot_present": boolean | null,
   "bone_exposure": boolean,
   "inflammation_level": "none" | "mild" | "moderate" | "severe",
@@ -30,9 +26,9 @@ Respond ONLY in valid JSON:
   "healing_stage": "early" | "intermediate" | "late" | "disrupted" | "cannot_assess",
   "image_quality": "poor" | "acceptable" | "good",
   "confidence": number,
-  "clinical_notes": "Diagnostic interpretation.",
-  "dry_socket_indicators": ["List specific abnormal findings"],
-  "recommended_actions": ["Steps for the clinician"]
+  "clinical_notes": "Diagnostic summary.",
+  "dry_socket_indicators": ["Specific visual abnormalities"],
+  "recommended_actions": ["Clinical steps"]
 }`
 
 /**
@@ -72,9 +68,10 @@ export async function analyzeImage(base64Image, mimeType = 'image/jpeg') {
     body: JSON.stringify({
       model: modelName,
       max_tokens: 3000,
-      temperature: 0.4,
-      frequency_penalty: 1.0,
+      temperature: 0.8,
+      frequency_penalty: 1.5,
       presence_penalty: 0.5,
+      top_p: 0.9,
       response_format: { type: 'json_object' },
       messages: [
         {
