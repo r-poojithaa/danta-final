@@ -7,28 +7,30 @@
 const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY
 const GROK_API_KEY = import.meta.env.VITE_GROK_API_KEY
 
-const SYSTEM_PROMPT = `Act as an expert Oral Surgeon performing a clinical audit of an extraction site.
-Your goal is to provide a TRUTHFUL and OBJECTIVE assessment of the visual evidence.
+const SYSTEM_PROMPT = `Act as an expert clinical auditor. Analyze the intraoral photo for dry socket pathology.
 
-DIAGNOSTIC CRITERIA:
-1. SOCKET FLOOR: Identify if it contains a healthy dark red blood clot or if it appears empty/grey.
-2. BONY MARGINS: Check for sharp, white, or creamy edges (exposed bone).
-3. SOFT TISSUE: Assess for inflammation (erythema/oedema) or healthy pink gingiva.
+PHYSICAL ANCHORING (Unique to every capture):
+Before discussing pathology, describe 2-3 unique physical artifacts in this photo (e.g. "Bright glare on the tooth", "Deep shadow at the base", "Texture of the surgical bib"). This ensures the analysis is tied to the unique pixels of this specific capture.
+
+CLINICAL CRITERIA:
+1. Examine the socket floor for color (ruby-red vs grey/empty).
+2. Look for high-contrast creamy areas (exposed bone).
+3. Check gingival cuff for edema/erythema.
 
 Respond ONLY in valid JSON:
 {
-  "visual_landmark": "Unique description of the photo's lighting, angle, and specific shadows to ensure this analysis is tailored to this exact capture.",
-  "clinical_finding": "Detailed, objective description of the socket. Mention specific colors and textures seen. If the site looks healthy, say so.",
+  "visual_landmark": "Physical artifacts, lighting, and angle description.",
+  "clinical_finding": "Detailed description of the socket tissue and bone state.",
   "clot_present": boolean | null,
   "bone_exposure": boolean,
   "inflammation_level": "none" | "mild" | "moderate" | "severe",
   "debris_present": boolean,
   "healing_stage": "early" | "intermediate" | "late" | "disrupted" | "cannot_assess",
   "image_quality": "poor" | "acceptable" | "good",
-  "confidence": number (0.0 to 1.0),
-  "clinical_notes": "Diagnostic summary of findings.",
-  "dry_socket_indicators": ["List specific visual evidence found, or 'None' if healthy"],
-  "recommended_actions": ["Clinical steps for the provider"]
+  "confidence": number,
+  "clinical_notes": "Objective diagnostic summary.",
+  "dry_socket_indicators": ["List specific abnormal findings or 'None'"],
+  "recommended_actions": ["Clinical steps"]
 }`
 
 /**
@@ -67,9 +69,10 @@ export async function analyzeImage(base64Image, mimeType = 'image/jpeg') {
     },
     body: JSON.stringify({
       model: modelName,
-      max_tokens: 3000,
+      max_tokens: 4096,
       temperature: 0.6,
       top_p: 0.95,
+      reasoning_effort: "none",
       response_format: { type: 'json_object' },
       messages: [
         {
@@ -77,7 +80,7 @@ export async function analyzeImage(base64Image, mimeType = 'image/jpeg') {
           content: [
             {
               type: 'text',
-              text: `${SYSTEM_PROMPT}\n\n[Analysis Request ID: ${analysisId}]\nAnalyze this specific photo and provide unique clinical findings in JSON.`,
+              text: `${SYSTEM_PROMPT}\n\n[RANDOM_SEED: ${Math.random()}]\nAnalyze this specific photo for clinical evidence and output valid JSON.`,
             },
             {
               type: 'image_url',
