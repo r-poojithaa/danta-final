@@ -49,10 +49,10 @@ export async function analyzeImage(base64Image, mimeType = 'image/jpeg') {
 
   // Detect provider based on key prefix
   if (key.startsWith('gsk_')) {
-    // Groq API - Using the frontier 120B model for clinical accuracy
+    // Groq API - Using the primary multimodal model
     apiKey = key
     apiUrl = 'https://api.groq.com/openai/v1/chat/completions'
-    modelName = 'openai/gpt-oss-120b'
+    modelName = 'qwen/qwen3.6-27b'
   } else if (key.startsWith('xai-')) {
     // xAI API
     apiKey = key
@@ -73,7 +73,7 @@ export async function analyzeImage(base64Image, mimeType = 'image/jpeg') {
     },
     body: JSON.stringify({
       model: modelName,
-      max_tokens: 2048,
+      max_tokens: 3000,
       temperature: 0.1,
       response_format: { type: 'json_object' },
       messages: [
@@ -82,7 +82,7 @@ export async function analyzeImage(base64Image, mimeType = 'image/jpeg') {
           content: [
             {
               type: 'text',
-              text: SYSTEM_PROMPT + '\n\nPerform a strict clinical analysis of this extraction site image. Respond in JSON.',
+              text: SYSTEM_PROMPT + '\n\nOutput strictly valid JSON. Analyze the image with zero bias. Describe the color and appearance of the socket floor in detail.',
             },
             {
               type: 'image_url',
