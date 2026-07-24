@@ -14,11 +14,11 @@ const FAQS = [
   },
   {
     q: 'How does image analysis work?',
-    a: 'Captured intraoral images are sent to OpenAI GPT-4o Vision, which detects clot presence, bone exposure, inflammation level, and debris. These features are converted to BN evidence and fused with clinical factors (60% clinical + 40% image).',
+    a: 'Captured intraoral images are sent to Groq High-Sensitivity Vision AI, which detects clot presence, bone exposure, and inflammation. These features are fused with clinical factors using a professional 60% clinical + 40% image weighting.',
   },
   {
     q: 'What does the risk score mean?',
-    a: 'The score (0–100) represents the posterior probability of dry socket × 100. LOW (0–34): Standard post-op care. MEDIUM (35–64): Enhanced monitoring + preventive measures. HIGH (65–100): Immediate prophylactic intervention recommended.',
+    a: 'The score (0–100) represents the posterior probability of dry socket. LOW (0–34): Standard care. MEDIUM (35–64): Enhanced monitoring. HIGH (65–100): Immediate prophylactic intervention (e.g. Alvogyl/ZOE) recommended.',
   },
   {
     q: 'Does the app work offline?',
@@ -33,8 +33,8 @@ const FAQS = [
     a: 'Yes. Danta is a Progressive Web App (PWA). On mobile, tap "Add to Home Screen" in your browser. On desktop, click the install icon in the address bar. It works offline and feels like a native app.',
   },
   {
-    q: 'How do I add the OpenAI key?',
-    a: 'Set VITE_OPENAI_API_KEY in your .env file. Without it, image analysis falls back to a heuristic placeholder and only the Bayesian Network risk is used.',
+    q: 'How do I add the AI API key?',
+    a: 'Set VITE_GROK_API_KEY in your environment variables. The app uses frontier-grade vision models (Qwen 3.6 / GPT-OSS) for maximum clinical accuracy and zero-template analysis.',
   },
 ]
 
@@ -127,7 +127,7 @@ export default function Help() {
           ))}
         </div>
 
-        <div className="text-center text-xs text-slate-500">Danta v1.0 · Built for dental professionals</div>
+        <div className="text-center text-xs text-slate-500">Danta v1.4 · Clinical Grade Decision Support</div>
       </main>
       <BottomNav />
     </div>

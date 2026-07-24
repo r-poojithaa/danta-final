@@ -65,7 +65,7 @@ export default function Settings() {
     {
       title: 'About',
       items: [
-        { icon: Info, label: 'About Danta', sub: 'Version 1.0.0 · Bayesian CDSS', action: () => {} },
+        { icon: Info, label: 'About Danta', sub: 'Version 1.4-STABLE-ACCURACY · Bayesian CDSS', action: () => {} },
       ],
     },
   ]
