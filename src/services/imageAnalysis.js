@@ -7,13 +7,9 @@
 const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY
 const GROK_API_KEY = import.meta.env.VITE_GROK_API_KEY
 
-const SYSTEM_PROMPT = `You are a specialist dental clinical assistant AI.
-Your task is to analyze intraoral photographs of extraction sites and identify risk factors for dry socket.
+const SYSTEM_PROMPT = `Act as a dental clinical assistant. Analyze the extraction site image for dry socket risk.
+Respond strictly in JSON format.
 
-You must respond ONLY with valid JSON.
-The clinical features you detect will be used in a Bayesian Network for risk calculation.
-
-JSON schema:
 {
   "clot_present": boolean | null,
   "bone_exposure": boolean,
@@ -22,13 +18,13 @@ JSON schema:
   "healing_stage": "early" | "intermediate" | "late" | "disrupted" | "cannot_assess",
   "image_quality": "poor" | "acceptable" | "good",
   "confidence": number,
-  "clinical_notes": string,
-  "dry_socket_indicators": string[],
-  "recommended_actions": string[]
+  "clinical_notes": "string",
+  "dry_socket_indicators": ["string"],
+  "recommended_actions": ["string"]
 }`
 
 /**
- * Analyze an intraoral image using GPT-OSS Vision
+ * Analyze an intraoral image using Vision AI
  * @param {string} base64Image  – base64-encoded image (without data URI prefix)
  * @param {string} mimeType     – e.g. 'image/jpeg'
  * @returns {Promise<ImageAnalysisResult>}
@@ -70,7 +66,7 @@ export async function analyzeImage(base64Image, mimeType = 'image/jpeg') {
     },
     body: JSON.stringify({
       model: modelName,
-      max_tokens: 1024,
+      max_tokens: 2048,
       temperature: 0,
       response_format: { type: 'json_object' },
       messages: [
@@ -79,7 +75,7 @@ export async function analyzeImage(base64Image, mimeType = 'image/jpeg') {
           content: [
             {
               type: 'text',
-              text: SYSTEM_PROMPT + '\n\nPlease analyze this intraoral image for dry socket risk and output the results in valid JSON format.',
+              text: SYSTEM_PROMPT + '\n\nOutput ONLY valid JSON for this image.',
             },
             {
               type: 'image_url',
