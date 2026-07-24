@@ -111,7 +111,11 @@ export async function analyzeImage(base64Image, mimeType = 'image/jpeg') {
   } catch {
     // Try to extract JSON from response
     const match = content.match(/\{[\s\S]*\}/)
-    result = match ? JSON.parse(match[0]) : heuristicFallback()
+    if (match) {
+      result = JSON.parse(match[0])
+    } else {
+      throw new Error('AI returned an invalid response format. Please try again.')
+    }
   }
 
   return enrichWithBNFeatures(result)
