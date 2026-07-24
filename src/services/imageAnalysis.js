@@ -7,59 +7,57 @@
 const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY
 const GROK_API_KEY = import.meta.env.VITE_GROK_API_KEY
 
-const SYSTEM_PROMPT = `Act as an expert Oral Surgeon. Analyze the intraoral photo of an extraction site with high clinical scrutiny.
+const SYSTEM_PROMPT = `Act as an expert Oral Surgeon performing a mandatory clinical audit.
+Every photo is unique. You MUST describe specific visual evidence. Do not use generic templates.
 
-REQUIRED REASONING PROCESS:
-1. Identify the socket depth: Is it hollow or filled?
-2. Examine the base: Is there a dark red/black blood clot, or is it grey/empty?
-3. Detect bone: Are there any creamy-white, high-contrast areas indicating exposed bone?
-4. Tissue check: Describe the gingival margins (erythema, oedema).
+Analyze these 3 specific zones:
+1. SOCKET FLOOR: Describe the exact color (e.g., ruby-red, grey slough, creamy white bone). Is it hollow or filled?
+2. BONY MARGINS: Are the edges sharp, white, and exposed, or covered by soft tissue?
+3. GINGIVAL CUFF: Describe the inflammation level and any edema at the margins.
 
-Respond ONLY in valid JSON format:
+Respond ONLY in valid JSON:
 {
-  "visual_reasoning": "A highly detailed clinical description of the colors, textures, and structures seen inside the socket.",
+  "zone_analysis": {
+    "floor": "Detailed description of the socket floor/clot.",
+    "margins": "Description of the bone and socket edges.",
+    "cuff": "Description of the surrounding gum tissue."
+  },
+  "visual_reasoning": "A clinical summary of why you chose the following flags, referencing specific pixel data (colors/textures).",
   "clot_present": boolean | null,
   "bone_exposure": boolean,
   "inflammation_level": "none" | "mild" | "moderate" | "severe",
   "debris_present": boolean,
   "healing_stage": "early" | "intermediate" | "late" | "disrupted" | "cannot_assess",
   "image_quality": "poor" | "acceptable" | "good",
-  "confidence": number (Scale 0.0 to 1.0),
-  "clinical_notes": "Clinical interpretation of the pathology.",
-  "dry_socket_indicators": ["List specific visual evidence found"],
-  "recommended_actions": ["Specific clinical steps based on the image"]
+  "confidence": number,
+  "clinical_notes": "Diagnostic interpretation.",
+  "dry_socket_indicators": ["List specific abnormal findings"],
+  "recommended_actions": ["Steps for the clinician"]
 }`
 
 /**
- * Analyze an intraoral image using high-capacity Vision AI
- * @param {string} base64Image  – base64-encoded image (without data URI prefix)
+ * Analyze an intraoral image using High-Sensitivity Vision AI
+ * @param {string} base64Image  – base64-encoded image
  * @param {string} mimeType     – e.g. 'image/jpeg'
  * @returns {Promise<ImageAnalysisResult>}
  */
 export async function analyzeImage(base64Image, mimeType = 'image/jpeg') {
   const dataUrl = `data:${mimeType};base64,${base64Image}`
+  const analysisId = crypto.randomUUID()
   let apiKey, apiUrl, modelName
   
-  // Try to find any available key
   const key = GROK_API_KEY || OPENAI_API_KEY
-  
-  if (!key) {
-    throw new Error('Missing AI API Key (VITE_GROK_API_KEY). Please check your .env file and RESTART your terminal.')
-  }
+  if (!key) throw new Error('Missing AI API Key (VITE_GROK_API_KEY).')
 
-  // Detect provider based on key prefix
   if (key.startsWith('gsk_')) {
-    // Groq API - Using the primary multimodal model
     apiKey = key
     apiUrl = 'https://api.groq.com/openai/v1/chat/completions'
     modelName = 'qwen/qwen3.6-27b'
   } else if (key.startsWith('xai-')) {
-    // xAI API
     apiKey = key
     apiUrl = 'https://api.x.ai/v1/chat/completions'
     modelName = 'grok-4.5'
   } else {
-    // Default to OpenAI
     apiKey = key
     apiUrl = 'https://api.openai.com/v1/chat/completions'
     modelName = 'gpt-4o'
@@ -74,7 +72,9 @@ export async function analyzeImage(base64Image, mimeType = 'image/jpeg') {
     body: JSON.stringify({
       model: modelName,
       max_tokens: 3000,
-      temperature: 0.1,
+      temperature: 0.4,
+      frequency_penalty: 1.0,
+      presence_penalty: 0.5,
       response_format: { type: 'json_object' },
       messages: [
         {
@@ -82,7 +82,7 @@ export async function analyzeImage(base64Image, mimeType = 'image/jpeg') {
           content: [
             {
               type: 'text',
-              text: SYSTEM_PROMPT + '\n\nOutput strictly valid JSON. Analyze the image with zero bias. Describe the color and appearance of the socket floor in detail.',
+              text: `${SYSTEM_PROMPT}\n\n[Analysis Request ID: ${analysisId}]\nAnalyze this specific photo and provide unique clinical findings in JSON.`,
             },
             {
               type: 'image_url',
@@ -146,13 +146,19 @@ export function imageToBNEvidence(analysisResult) {
 export function imageRiskScore(analysisResult) {
   if (!analysisResult) return 0
   let score = 0
-  if (analysisResult.clot_present === false) score += 40
-  if (analysisResult.bone_exposure) score += 35
-  if (analysisResult.inflammation_level === 'severe') score += 20
-  else if (analysisResult.inflammation_level === 'moderate') score += 12
+
+  // Non-linear critical scoring
+  if (analysisResult.clot_present === false) score += 50
+  if (analysisResult.bone_exposure) score += 60 // Immediate High Risk indicator
+
+  // Secondary indicators
+  if (analysisResult.inflammation_level === 'severe') score += 25
+  else if (analysisResult.inflammation_level === 'moderate') score += 15
   else if (analysisResult.inflammation_level === 'mild') score += 5
-  if (analysisResult.debris_present) score += 10
-  if (analysisResult.healing_stage === 'disrupted') score += 15
+
+  if (analysisResult.debris_present) score += 15
+  if (analysisResult.healing_stage === 'disrupted') score += 30
+
   return Math.min(100, Math.round(score))
 }
 

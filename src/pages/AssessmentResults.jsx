@@ -109,17 +109,24 @@ export default function AssessmentResults() {
               ))}
             </div>
 
-            {imageAnalysis.visual_reasoning && (
-              <div className="bg-primary/5 border border-primary/20 rounded-xl p-3">
-                <div className="text-xs text-primary font-bold mb-1 uppercase tracking-wider">Visual Reasoning (AI Analysis)</div>
-                <p className="text-sm text-slate-200 italic leading-relaxed">"{imageAnalysis.visual_reasoning}"</p>
+            {imageAnalysis.zone_analysis && (
+              <div className="space-y-2 mb-3">
+                <div className="text-xs text-primary font-bold uppercase tracking-wider">Clinical Observations (Zone-Based)</div>
+                <div className="grid gap-2">
+                  {Object.entries(imageAnalysis.zone_analysis).map(([zone, desc]) => (
+                    <div key={zone} className="bg-primary/5 border border-primary/10 rounded-xl p-3">
+                      <span className="text-[10px] font-bold text-primary uppercase block mb-1">{zone}</span>
+                      <p className="text-sm text-slate-300 italic">"{desc}"</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
-            {imageAnalysis.clinical_notes && (
+            {imageAnalysis.visual_reasoning && (
               <div className="bg-surface border border-surface-border rounded-xl p-3">
-                <div className="text-xs text-slate-400 mb-1">Clinical Interpretation</div>
-                <p className="text-sm text-slate-300">{imageAnalysis.clinical_notes}</p>
+                <div className="text-xs text-slate-400 mb-1 font-semibold uppercase">Diagnostic Reasoning</div>
+                <p className="text-sm text-slate-200 italic leading-relaxed">"{imageAnalysis.visual_reasoning}"</p>
               </div>
             )}
 
