@@ -109,9 +109,16 @@ export default function AssessmentResults() {
               ))}
             </div>
 
+            {imageAnalysis.visual_reasoning && (
+              <div className="bg-primary/5 border border-primary/20 rounded-xl p-3">
+                <div className="text-xs text-primary font-bold mb-1 uppercase tracking-wider">Visual Reasoning (AI Analysis)</div>
+                <p className="text-sm text-slate-200 italic leading-relaxed">"{imageAnalysis.visual_reasoning}"</p>
+              </div>
+            )}
+
             {imageAnalysis.clinical_notes && (
               <div className="bg-surface border border-surface-border rounded-xl p-3">
-                <div className="text-xs text-slate-400 mb-1">Clinical Notes (AI)</div>
+                <div className="text-xs text-slate-400 mb-1">Clinical Interpretation</div>
                 <p className="text-sm text-slate-300">{imageAnalysis.clinical_notes}</p>
               </div>
             )}

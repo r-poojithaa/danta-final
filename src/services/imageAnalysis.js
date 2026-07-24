@@ -8,30 +8,30 @@ const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY
 const GROK_API_KEY = import.meta.env.VITE_GROK_API_KEY
 
 const SYSTEM_PROMPT = `Act as an expert Oral Surgeon. Analyze the intraoral photo of an extraction site with high clinical scrutiny.
-Do not be "safe" or "lazy". If you see signs of dry socket, report them accurately.
 
-Follow this reasoning process:
-1. Observe the socket: Is it empty, filled with a dark clot, or covered in greyish debris?
-2. Check for bone: Do you see any exposed, white, or creamy-colored hard surfaces?
-3. Check for tissue: Is the gingiva red, swollen, or healthy pink?
+REQUIRED REASONING PROCESS:
+1. Identify the socket depth: Is it hollow or filled?
+2. Examine the base: Is there a dark red/black blood clot, or is it grey/empty?
+3. Detect bone: Are there any creamy-white, high-contrast areas indicating exposed bone?
+4. Tissue check: Describe the gingival margins (erythema, oedema).
 
 Respond ONLY in valid JSON format:
 {
-  "visual_confirmation": "A detailed 2-sentence description of exactly what you see in the socket (colors, textures, clot state).",
+  "visual_reasoning": "A highly detailed clinical description of the colors, textures, and structures seen inside the socket.",
   "clot_present": boolean | null,
   "bone_exposure": boolean,
   "inflammation_level": "none" | "mild" | "moderate" | "severe",
   "debris_present": boolean,
   "healing_stage": "early" | "intermediate" | "late" | "disrupted" | "cannot_assess",
   "image_quality": "poor" | "acceptable" | "good",
-  "confidence": number,
-  "clinical_notes": "Clinical interpretation of the findings.",
+  "confidence": number (Scale 0.0 to 1.0),
+  "clinical_notes": "Clinical interpretation of the pathology.",
   "dry_socket_indicators": ["List specific visual evidence found"],
   "recommended_actions": ["Specific clinical steps based on the image"]
 }`
 
 /**
- * Analyze an intraoral image using Vision AI
+ * Analyze an intraoral image using high-capacity Vision AI
  * @param {string} base64Image  – base64-encoded image (without data URI prefix)
  * @param {string} mimeType     – e.g. 'image/jpeg'
  * @returns {Promise<ImageAnalysisResult>}
@@ -49,10 +49,10 @@ export async function analyzeImage(base64Image, mimeType = 'image/jpeg') {
 
   // Detect provider based on key prefix
   if (key.startsWith('gsk_')) {
-    // Groq API - Using the primary vision model
+    // Groq API - Using the frontier 120B model for clinical accuracy
     apiKey = key
     apiUrl = 'https://api.groq.com/openai/v1/chat/completions'
-    modelName = 'qwen/qwen3.6-27b'
+    modelName = 'openai/gpt-oss-120b'
   } else if (key.startsWith('xai-')) {
     // xAI API
     apiKey = key
@@ -74,7 +74,7 @@ export async function analyzeImage(base64Image, mimeType = 'image/jpeg') {
     body: JSON.stringify({
       model: modelName,
       max_tokens: 2048,
-      temperature: 0.2,
+      temperature: 0.1,
       response_format: { type: 'json_object' },
       messages: [
         {
@@ -82,7 +82,7 @@ export async function analyzeImage(base64Image, mimeType = 'image/jpeg') {
           content: [
             {
               type: 'text',
-              text: SYSTEM_PROMPT + '\n\nOutput ONLY valid JSON for this image.',
+              text: SYSTEM_PROMPT + '\n\nPerform a strict clinical analysis of this extraction site image. Respond in JSON.',
             },
             {
               type: 'image_url',
