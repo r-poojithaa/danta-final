@@ -29,19 +29,11 @@ export function calculateUnifiedRisk(clinicalEvidence = {}, imageAnalysis = null
   if (imageScore !== null && imageAnalysis?.confidence > 0.4) {
     const imageProb = imageScore / 100
 
-    // ─── Pathology Override Logic ───
-    // If AI detects a critical feature with high confidence, force the risk up.
-    // This prevents a "healthy" patient history from masking a bad socket.
-    const hasPathology = imageAnalysis.clot_present === false || imageAnalysis.bone_exposure === true
-    const highConfidence = imageAnalysis.confidence > 0.75
+    // ─── 60/40 Weighted Fusion ───
+    // 60% weight to Clinical BN, 40% weight to Image AI
+    finalProbability = (bnResult.probability * 0.60) + (imageProb * 0.40)
 
-    if (hasPathology && highConfidence) {
-      finalProbability = Math.max(0.85, imageProb) // Force HIGH risk
-      fusionNote = `PATHOLOGY DETECTED (Override): AI detected missing clot or bone exposure.`
-    } else {
-      finalProbability = 0.50 * bnResult.probability + 0.50 * imageProb
-      fusionNote = `Balanced Fusion: Clinical factors (50%) + AI Vision (50%)`
-    }
+    fusionNote = `Balanced Fusion: Clinical factors (60%) + AI Vision (40%, confidence: ${Math.round(imageAnalysis.confidence * 100)}%)`
   }
 
   const riskScore = Math.round(finalProbability * 100)
