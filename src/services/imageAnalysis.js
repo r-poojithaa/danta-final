@@ -47,12 +47,8 @@ export async function analyzeImage(base64Image, mimeType = 'image/jpeg') {
   // Try to find any available key
   const key = GROK_API_KEY || OPENAI_API_KEY
   
-  if (!key || key.includes('removed_to_force_grok')) {
-    // If no real key, or dummy key, check for Grok key specifically
-    if (!GROK_API_KEY || GROK_API_KEY === '') {
-      console.warn('[ImageAnalysis] No valid AI key found – using heuristic fallback')
-      return heuristicFallback()
-    }
+  if (!key) {
+    throw new Error('Missing AI API Key (VITE_GROK_API_KEY). Please check your .env file and RESTART your terminal.')
   }
 
   // Detect provider based on key prefix
@@ -60,12 +56,12 @@ export async function analyzeImage(base64Image, mimeType = 'image/jpeg') {
     // Groq API (Commonly used by people asking for "Grok")
     apiKey = key
     apiUrl = 'https://api.groq.com/openai/v1/chat/completions'
-    modelName = 'meta-llama/llama-4-scout-17b-16e-instruct'
+    modelName = 'qwen/qwen3.6-27b'
   } else if (key.startsWith('xai-')) {
     // xAI API (The official Grok API)
     apiKey = key
     apiUrl = 'https://api.x.ai/v1/chat/completions'
-    modelName = 'grok-4.3'
+    modelName = 'grok-4.5'
   } else {
     // Default to OpenAI
     apiKey = key
