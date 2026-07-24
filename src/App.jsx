@@ -12,6 +12,7 @@ import AssessmentResults from './pages/AssessmentResults.jsx'
 import Reports from './pages/Reports.jsx'
 import Settings from './pages/Settings.jsx'
 import Help from './pages/Help.jsx'
+import UpdatePassword from './pages/UpdatePassword.jsx'
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth()
@@ -41,6 +42,7 @@ export default function App() {
         <Routes>
           {/* Public */}
           <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+          <Route path="/update-password" element={<UpdatePassword />} />
 
           {/* Private */}
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />

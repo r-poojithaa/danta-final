@@ -18,7 +18,10 @@ export const auth = {
   signOut: () => supabase.auth.signOut(),
   getUser: () => supabase.auth.getUser(),
   onAuthChange: (cb) => supabase.auth.onAuthStateChange(cb),
-  resetPassword: (email) => supabase.auth.resetPasswordForEmail(email),
+  resetPassword: (email) => supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/update-password`,
+  }),
+  updateUser: (data) => supabase.auth.updateUser(data),
 }
 
 // ─── Patients ─────────────────────────────────────────────────────────────────

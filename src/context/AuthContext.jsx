@@ -41,8 +41,14 @@ export function AuthProvider({ children }) {
     return { data, error }
   }
 
+  const updateUser = async (data) => {
+    const { data: userData, error } = await auth.updateUser(data)
+    if (!error) setUser(userData.user)
+    return { data: userData, error }
+  }
+
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut, resetPassword }}>
+    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut, resetPassword, updateUser }}>
       {children}
     </AuthContext.Provider>
   )
