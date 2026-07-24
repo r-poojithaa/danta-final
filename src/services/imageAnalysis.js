@@ -7,31 +7,28 @@
 const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY
 const GROK_API_KEY = import.meta.env.VITE_GROK_API_KEY
 
-const SYSTEM_PROMPT = `Act as a clinical auditor. Analyze the intraoral image for dry socket pathology.
-Do NOT use generic templates.
+const SYSTEM_PROMPT = `Act as an expert Oral Surgeon performing a clinical audit of an extraction site.
+Your goal is to provide a TRUTHFUL and OBJECTIVE assessment of the visual evidence.
 
-REQUIRED STEP:
-Before analysis, describe the specific visual anchor of this photo (e.g. "Bright reflection at the mesial edge" or "Deep shadow in the distal corner"). This anchor is unique to this specific image capture.
-
-CLINICAL SCRUTINY:
-1. Identify physical colors (e.g. "dark ruby-red", "opaque grey slough").
-2. Describe texture (e.g. "moist and filled", "dry and hollow").
-3. Check bony margins for exposure.
+DIAGNOSTIC CRITERIA:
+1. SOCKET FLOOR: Identify if it contains a healthy dark red blood clot or if it appears empty/grey.
+2. BONY MARGINS: Check for sharp, white, or creamy edges (exposed bone).
+3. SOFT TISSUE: Assess for inflammation (erythema/oedema) or healthy pink gingiva.
 
 Respond ONLY in valid JSON:
 {
-  "visual_landmark": "Unique description of lighting/shadows in this specific photo.",
-  "clinical_finding": "Detailed clinical description of the socket floor, margins, and tissue using specific medical terms.",
+  "visual_landmark": "Unique description of the photo's lighting, angle, and specific shadows to ensure this analysis is tailored to this exact capture.",
+  "clinical_finding": "Detailed, objective description of the socket. Mention specific colors and textures seen. If the site looks healthy, say so.",
   "clot_present": boolean | null,
   "bone_exposure": boolean,
   "inflammation_level": "none" | "mild" | "moderate" | "severe",
   "debris_present": boolean,
   "healing_stage": "early" | "intermediate" | "late" | "disrupted" | "cannot_assess",
   "image_quality": "poor" | "acceptable" | "good",
-  "confidence": number,
-  "clinical_notes": "Diagnostic summary.",
-  "dry_socket_indicators": ["Specific visual abnormalities"],
-  "recommended_actions": ["Clinical steps"]
+  "confidence": number (0.0 to 1.0),
+  "clinical_notes": "Diagnostic summary of findings.",
+  "dry_socket_indicators": ["List specific visual evidence found, or 'None' if healthy"],
+  "recommended_actions": ["Clinical steps for the provider"]
 }`
 
 /**

@@ -83,16 +83,22 @@ export default function Assessment() {
         const result = await analyzeImage(base64, mimeType)
         
         const newResult = { imageId: newImage.id, ...result }
+
+        // Update results list
         setImageAnalysisResults(prev => [...prev, newResult])
         
+        // IMMEDIATE UPDATE: Force merged evidence update in the same flow
         if (!newResult.error) {
-          setMergedImageEvidence(prev => ({
-            ...prev,
-            no_clot: prev.no_clot || newResult.bn_evidence?.no_clot,
-            bone_exposure: prev.bone_exposure || newResult.bn_evidence?.bone_exposure,
-            inflammation: prev.inflammation || newResult.bn_evidence?.inflammation,
-            debris: prev.debris || newResult.bn_evidence?.debris,
-          }))
+          setMergedImageEvidence(prev => {
+            const updated = {
+              ...prev,
+              no_clot: prev.no_clot || newResult.bn_evidence?.no_clot,
+              bone_exposure: prev.bone_exposure || newResult.bn_evidence?.bone_exposure,
+              inflammation: prev.inflammation || newResult.bn_evidence?.inflammation,
+              debris: prev.debris || newResult.bn_evidence?.debris,
+            }
+            return updated
+          })
         }
       } catch (err) {
         console.error('Analysis error:', err)
