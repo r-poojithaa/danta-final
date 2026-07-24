@@ -33,6 +33,7 @@ dist-ssr
 # Build output
 dist
 dist-ssr
+dev-dist
 build
 
 # Misc
