@@ -8,8 +8,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.danta.app.databinding.ActivityLoginBinding
 import com.danta.app.services.SupabaseManager
-import io.github.jan.supabase.auth.auth
-import io.github.jan.supabase.auth.providers.builtin.Email
+import io.github.jan_tennert.supabase.auth.auth
+import io.github.jan_tennert.supabase.auth.providers.builtin.Email
 import kotlinx.coroutines.launch
 
 class LoginActivity : AppCompatActivity() {

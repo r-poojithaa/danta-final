@@ -2,8 +2,8 @@ package com.danta.app.services
 
 import com.danta.app.logic.AssessmentRecord
 import com.danta.app.logic.Patient
-import io.github.jan.supabase.postgrest.postgrest
-import io.github.jan.supabase.postgrest.query.Order
+import io.github.jan_tennert.supabase.postgrest.postgrest
+import io.github.jan_tennert.supabase.postgrest.query.Order
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

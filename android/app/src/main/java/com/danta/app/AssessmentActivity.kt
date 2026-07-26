@@ -17,7 +17,7 @@ import com.danta.app.logic.ImageAnalysisResult
 import com.danta.app.logic.RiskCalculator
 import com.danta.app.services.ClinicalRepository
 import com.danta.app.services.SupabaseManager
-import io.github.jan.supabase.auth.auth
+import io.github.jan_tennert.supabase.auth.auth
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json

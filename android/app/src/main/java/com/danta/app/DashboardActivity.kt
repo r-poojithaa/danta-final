@@ -12,7 +12,7 @@ import com.danta.app.adapters.AssessmentAdapter
 import com.danta.app.databinding.ActivityDashboardBinding
 import com.danta.app.services.ClinicalRepository
 import com.danta.app.services.SupabaseManager
-import io.github.jan.supabase.auth.auth
+import io.github.jan_tennert.supabase.auth.auth
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
