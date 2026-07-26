@@ -10,8 +10,14 @@ export default function UpdatePassword() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
-  const { updateUser } = useAuth()
+  const { user, loading, updateUser } = useAuth()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/login')
+    }
+  }, [user, loading, navigate])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
